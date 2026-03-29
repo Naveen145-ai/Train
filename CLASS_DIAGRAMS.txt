@@ -1,0 +1,353 @@
+================================================
+   CLASS DIAGRAMS & RELATIONSHIPS
+================================================
+
+CLASS DIAGRAM (UML-style):
+=========================
+
+                    ┌──────────────────────┐
+                    │      PAYMENT         │
+                    ├──────────────────────┤
+                    │ - paymentId: int     │
+                    │ - amount: double     │
+                    │ - paymentMethod:     │
+                    │   String             │
+                    │ - status: String     │
+                    ├──────────────────────┤
+                    │ + get/set methods    │
+                    │ + toString()         │
+                    └──────────────────────┘
+                              △
+                              │ 1 (aggregation)
+                              │
+                    ┌──────────┴──────────┐
+                    │      TICKET         │
+                    ├──────────────────────┤
+                    │ - ticketId: int      │
+                    │ - trainNumber: int   │
+                    │ - source: String     │
+                    │ - destination:       │
+                    │   String             │
+                    │ - fare: double       │
+                    │ - status: String     │
+                    │ - payment: Payment   │
+                    ├──────────────────────┤
+                    │ + get/set methods    │
+                    │ + toString()         │
+                    └──────────────────────┘
+                              △
+                              │ 1..* (composition)
+                              │
+                    ┌──────────┴──────────┐
+                    │     PASSENGER       │
+                    ├──────────────────────┤
+                    │ - id: int            │
+                    │ - name: String       │
+                    │ - age: int           │
+                    │ - aadhar: String     │
+                    │ - tickets: List<T>   │
+                    ├──────────────────────┤
+                    │ + getId()            │
+                    │ + getName()          │
+                    │ + getAge()           │
+                    │ + getAadhar()        │
+                    │ + getTickets()       │
+                    │ + addTicket()        │
+                    │ + removeTicket()     │
+                    │ + toString()         │
+                    └──────────────────────┘
+                              △
+                              │ 1..* (composition)
+                              │
+                    ┌──────────┴──────────┐
+                    │       TRAIN         │
+                    ├──────────────────────┤
+                    │ - trainNumber: int   │
+                    │ - trainName: String  │
+                    │ - source: String     │
+                    │ - destination:       │
+                    │   String             │
+                    │ - totalCapacity: int │
+                    │ - currentPass: int   │
+                    │ - passengers:        │
+                    │   List<Passenger>    │
+                    ├──────────────────────┤
+                    │ + addPassenger()     │
+                    │ + removePassenger()  │
+                    │ + hasCapacity()      │
+                    │ + getAvailableSeats()│
+                    │ + toString()         │
+                    └──────────────────────┘
+                              △
+                              │ used by
+                              │
+                    ┌──────────┴──────────────────┐
+                    │   USERLOGINSYSTEM           │
+                    ├──────────────────────────┤
+                    │ - userCredentials:        │
+                    │   HashMap<String, String> │
+                    │ - loggedInUser: String    │
+                    ├──────────────────────────┤
+                    │ + register()              │
+                    │ + login()                 │
+                    │ + logout()                │
+                    │ + getLoggedInUser()       │
+                    │ + isLoggedIn()            │
+                    └──────────────────────────┘
+                              △
+                              │ used by
+                              │
+                    ┌──────────┴──────────────────┐
+                    │         MAIN                │
+                    ├──────────────────────────┤
+                    │ - loginSystem: ULS        │
+                    │ - train: Train            │
+                    │ - ticketIdCounter         │
+                    │ - passengerIdCounter      │
+                    │ - paymentIdCounter        │
+                    │ - scanner                 │
+                    ├──────────────────────────┤
+                    │ + main()                  │
+                    │ + bookTicket()            │
+                    │ + cancelTicket()          │
+                    │ + listAllPassengers()     │
+                    │ + checkTrainStatus()      │
+                    │ + login()                 │
+                    │ + register()              │
+                    │ + logout()                │
+                    └──────────────────────────┘
+
+
+INHERITANCE & COMPOSITION:
+===========================
+
+Composition Relationships:
+├── Train CONTAINS Passenger (1 to many)
+│   └── Passenger CONTAINS Ticket (1 to many)
+│       └── Ticket CONTAINS Payment (1 to 1)
+
+Aggregation:
+└── Main USES UserLoginSystem (dependency)
+    Main USES Train (dependency)
+
+
+MEMORY STRUCTURE:
+=================
+
+When User Logs In and Books 2 Tickets:
+
+Stack Memory:
+┌─────────────────────────────────────────┐
+│ main() method                           │
+│ ├─ scanner (Scanner)                   │
+│ ├─ loginSystem (UserLoginSystem ref)   │
+│ ├─ train (Train ref)                   │
+│ ├─ choice (String)                     │
+│ └─ Local variables                      │
+└─────────────────────────────────────────┘
+
+Heap Memory:
+┌─────────────────────────────────────────┐
+│ UserLoginSystem Object                  │
+│ ├─ userCredentials (HashMap)            │
+│ │  ├─ "user1" → "pass123"              │
+│ │  └─ ...                               │
+│ └─ loggedInUser = "user1"               │
+├─────────────────────────────────────────┤
+│ Train Object                            │
+│ ├─ trainNumber = 101                    │
+│ ├─ trainName = "Express Train"          │
+│ ├─ totalCapacity = 50                   │
+│ ├─ currentPassengers = 2                │
+│ └─ passengers (ArrayList)               │
+│    ├─ [0] Passenger Object 1            │
+│    │    ├─ id = 1                      │
+│    │    ├─ name = "Raj Kumar"          │
+│    │    └─ tickets (ArrayList)         │
+│    │       └─ [0] Ticket 1001          │
+│    │          ├─ ticketId = 1001       │
+│    │          ├─ fare = 500             │
+│    │          └─ payment (Payment Ref) │
+│    │              ├─ paymentId = 1    │
+│    │              └─ amount = 500       │
+│    │                                    │
+│    └─ [1] Passenger Object 2            │
+│         ├─ id = 2                      │
+│         ├─ name = "Priya Singh"        │
+│         └─ tickets (ArrayList)         │
+│             └─ [0] Ticket 1002        │
+│                ├─ ticketId = 1002      │
+│                ├─ fare = 450            │
+│                └─ payment (Payment Ref)│
+│                    ├─ paymentId = 2   │
+│                    └─ amount = 450      │
+└─────────────────────────────────────────┘
+
+
+METHOD CALL SEQUENCE (Book Ticket):
+====================================
+
+1. User Selects "Book Ticket"
+   ↓
+2. Main.bookTicket() called
+   ├─ Get passenger details from input
+   ├─ Check train.hasCapacity()
+   ├─ Create new Payment object
+   ├─ Create new Passenger object
+   ├─ Create new Ticket object
+   ├─ passenger.addTicket(ticket)
+   ├─ train.addPassenger(passenger)
+   │  ├─ passengers.add(passenger)
+   │  └─ currentPassengers++
+   └─ Display confirmation
+
+
+METHOD CALL SEQUENCE (Cancel Ticket):
+======================================
+
+1. User Selects "Cancel Ticket"
+   ↓
+2. Main.cancelTicket() called
+   ├─ Get passenger ID from input
+   ├─ findPassengerById(id)
+   │  └─ Search passengers list
+   ├─ Get ticket list from passenger
+   ├─ Display tickets
+   ├─ Get selection from user
+   ├─ ticket.setStatus("CANCELLED")
+   ├─ passenger.removeTicket(ticket)
+   │  └─ tickets.remove(ticket)
+   ├─ train.removePassenger(passenger)
+   │  ├─ passengers.remove(passenger)
+   │  └─ currentPassengers--
+   └─ Display refund amount
+
+
+STATE TRANSITIONS:
+==================
+
+Ticket States:
+┌──────────────────────────────────────────┐
+│           TICKET LIFECYCLE                │
+│                                          │
+│ [Created]                                │
+│      ↓                                   │
+│ [BOOKED* - Passenger has ticket]        │
+│      ↓                                   │
+│ [CANCELLED - Ticket removed]             │
+│      ↓                                   │
+│ [Refunded - Seat freed]                 │
+└──────────────────────────────────────────┘
+
+
+Passenger States:
+┌──────────────────────────────────────────┐
+│         PASSENGER LIFECYCLE               │
+│                                          │
+│ [Created]                                │
+│      ↓                                   │
+│ [On Train - boarded with ticket(s)]     │
+│      ↓                                   │
+│ [Off Train - all tickets cancelled]     │
+└──────────────────────────────────────────┘
+
+
+Train Capacity States:
+┌──────────────────────────────────────────┐
+│    TRAIN CAPACITY TRANSITIONS             │
+│                                          │
+│ Capacity: 50, Passengers: 0              │
+│      ↓ (Book Ticket)                    │
+│ Capacity: 50, Passengers: 1              │
+│      ↓ (Book Ticket)                    │
+│ Capacity: 50, Passengers: 2              │
+│      ...                                 │
+│ Capacity: 50, Passengers: 50             │
+│      ↓ (Full - Can't book)              │
+│ Capacity: 50, Passengers: 50 [FULL]    │
+│      ↓ (Cancel Ticket)                  │
+│ Capacity: 50, Passengers: 49             │
+└──────────────────────────────────────────┘
+
+
+OBJECT RELATIONSHIPS AT RUNTIME:
+=================================
+
+After 2 Bookings:
+
+               Main
+                │
+        ┌───────┼────────┐
+        │       │        │
+        ▼       ▼        ▼
+        │    Train  UserLoginSystem
+        │       │
+        │   Passengers
+        │       │
+        │   ┌───┼───┐
+        │   │   │   │
+        │   ▼   ▼   ▼
+        │  [P1][P2]...
+        │   │   │
+        │   │   └─→Tickets
+        │   │       │
+        │   │       ├─→Ticket 1002
+        │   │       │   └─→Payment 2
+        │   │
+        │   └─→Tickets
+        │       │
+        │       └─→Ticket 1001
+        │           └─→Payment 1
+
+
+CONSTRUCTOR CHAIN:
+====================
+
+new Train(101, "Express Train", "Delhi", "Mumbai")
+  └─ passengers = new ArrayList<Passenger>()
+     totalCapacity = 50
+     currentPassengers = 0
+
+new Passenger(1, "Raj Kumar", 28, "1234567890")
+  └─ tickets = new ArrayList<Ticket>()
+
+new Ticket(1001, 101, "Delhi", "Mumbai", 500, "BOOKED", payment)
+  └─ No collections, simple object
+
+new Payment(1, 500, "CREDIT_CARD", "COMPLETED")
+  └─ No collections, simple object
+
+new UserLoginSystem()
+  └─ userCredentials = new HashMap<String, String>()
+     ├─ put("user1", "pass123")
+     ├─ put("user2", "pass456")
+     └─ put("admin", "admin123")
+     loggedInUser = null
+
+
+VISIBILITY & ACCESS:
+======================
+
+Public Methods (Accessible from Main):
+├── Passenger: get/setters, addTicket, removeTicket
+├── Train: get/setters, addPassenger, removePassenger, hasCapacity
+├── Ticket: get/setters
+├── Payment: get/setters
+└── UserLoginSystem: register, login, logout, isLoggedIn, getLoggedInUser
+
+Private Fields (Encapsulated):
+├── All entity attributes marked private
+├── UserLoginSystem.userCredentials
+└── UserLoginSystem.loggedInUser
+
+Access Pattern:
+Main ──call─→ UserLoginSystem ──→ isLoggedIn
+       ──call─→ Train ──→ addPassenger
+       ──call─→ Passenger ──→ addTicket
+       ──call─→ Ticket ──→ get properties
+       ──call─→ Payment ──→ get properties
+
+---
+
+This design ensures proper encapsulation, clear relationships,
+and efficient data management throughout the application lifecycle.

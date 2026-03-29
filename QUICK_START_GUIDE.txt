@@ -1,0 +1,396 @@
+================================================
+   QUICK START & TESTING GUIDE
+================================================
+
+HOW TO COMPILE:
+===============
+
+1. Open Command Prompt or PowerShell
+2. Navigate to the project directory:
+   cd c:\Users\navee\OneDrive\Documents\projects\Ticket
+
+3. Compile all Java files:
+   javac *.java
+
+4. Verify compilation (should see .class files):
+   dir *.class
+
+
+HOW TO RUN:
+===========
+
+1. From the project directory, run:
+   java Main
+
+2. The application will start with authentication menu
+
+3. Login with default credentials or register new account
+
+
+DEFAULT TEST ACCOUNTS:
+=====================
+
+Account 1:
+  Username: user1
+  Password: pass123
+
+Account 2:
+  Username: user2
+  Password: pass456
+
+Admin Account:
+  Username: admin
+  Password: admin123
+
+Or register your own account during runtime.
+
+
+COMPLETE TEST WORKFLOW:
+=======================
+
+TEST CASE 1: Registration & Login
+──────────────────────────────────
+1. Run: java Main
+2. Select: 2 (Register)
+3. Enter username: testuser
+4. Enter password: test123
+5. See: "✓ Registration successful!"
+6. Select: 1 (Login)
+7. Enter username: testuser
+8. Enter password: test123
+9. See: "✓ Login successful! Welcome, testuser"
+
+
+TEST CASE 2: Book Single Ticket
+───────────────────────────────
+1. After login, select: 1 (Book Ticket)
+2. Enter passenger name: John Doe
+3. Enter passenger age: 30
+4. Enter passenger Aadhar: 1234-5678-9012
+5. Enter source station: Delhi
+6. Enter destination station: Mumbai
+7. Enter ticket fare: 500
+8. Enter payment method: UPI
+9. See: "✓ Ticket booked successfully!"
+10. Note: Available seats should be 49
+
+
+TEST CASE 3: Book Multiple Tickets
+───────────────────────────────────
+1. Select: 1 (Book Ticket) - repeat 3 times
+2. Enter different passenger details each time
+3. Check that capacity decreases:
+   After 1st booking: 49 seats
+   After 2nd booking: 48 seats
+   After 3rd booking: 47 seats
+
+
+TEST CASE 4: List All Passengers
+─────────────────────────────────
+1. Select: 4 (List All Passengers)
+2. Should see table with:
+   - ID | Name | Age | Aadhar | Tickets
+   - All booked passengers listed
+   - Total count at bottom
+
+
+TEST CASE 5: Check Train Status
+────────────────────────────────
+1. Select: 5 (Check Train Status)
+2. Should see:
+   - Route: Delhi → Mumbai
+   - Total Seats: 50
+   - Occupied Seats: 3 (or whatever is booked)
+   - Available Seats: 47 (or remaining)
+   - Occupancy Rate: 6.00% (or calculated)
+
+
+TEST CASE 6: Cancel Ticket
+──────────────────────────
+1. Select: 2 (Cancel Ticket)
+2. Enter passenger ID: 1
+3. See list of tickets for this passenger
+4. Select ticket number to cancel: 1
+5. See: "✓ Ticket cancelled successfully!"
+6. See: "Refund amount: 500"
+7. Check: Available seats increased by 1
+
+
+TEST CASE 7: Test Full Train Capacity
+──────────────────────────────────────
+1. Book 50 tickets (or use test script)
+2. Try to book 51st ticket
+3. See: "✗ Train is full! No seats available."
+
+
+TEST CASE 8: Invalid Login
+──────────────────────────
+1. Run: java Main
+2. Select: 1 (Login)
+3. Enter username: user1
+4. Enter password: wrongpass
+5. See: "✗ Invalid username or password!"
+
+
+TEST CASE 9: Logout & Relogin
+─────────────────────────────
+1. Select: 6 (Logout)
+2. See: "✓ Logged out successfully!"
+3. Back at authentication menu
+4. Login again with valid credentials
+
+
+TEST CASE 10: View Tickets
+──────────────────────────
+1. Book at least 1 ticket
+2. Select: 3 (View My Tickets)
+3. Should see booked tickets with details:
+   - Passenger name
+   - Ticket ID
+   - Route
+   - Fare
+   - Payment information
+
+
+AUTOMATED TEST SCRIPT:
+======================
+
+Create a TestTrainTicketSystem.java file to automate testing:
+
+Public class TestTrainTicketSystem {
+    public static void main(String[] args) {
+        UserLoginSystem login = new UserLoginSystem();
+        Train train = new Train(101, "Express", "Delhi", "Mumbai");
+        
+        // Test 1: Registration
+        System.out.println("Test 1: Registration");
+        assert login.register("newuser", "pass123");
+        assert !login.register("newuser", "pass123"); // Duplicate
+        
+        // Test 2: Login
+        System.out.println("Test 2: Login");
+        assert login.login("newuser", "pass123");
+        assert login.isLoggedIn();
+        
+        // Test 3: Booking
+        System.out.println("Test 3: Booking");
+        Passenger p1 = new Passenger(1, "John", 30, "111");
+        Payment pay1 = new Payment(1, 500, "UPI", "COMPLETED");
+        Ticket t1 = new Ticket(1001, 101, "Delhi", "Mumbai", 500, "BOOKED", pay1);
+        p1.addTicket(t1);
+        assert train.addPassenger(p1);
+        assert train.getCurrentPassengers() == 1;
+        assert train.getAvailableSeats() == 49;
+        
+        // Test 4: Cancellation
+        System.out.println("Test 4: Cancellation");
+        train.removePassenger(p1);
+        assert train.getCurrentPassengers() == 0;
+        assert train.getAvailableSeats() == 50;
+        
+        // Test 5: Capacity
+        System.out.println("Test 5: Capacity Test");
+        for (int i = 0; i < 50; i++) {
+            Passenger p = new Passenger(i+1, "Pass"+i, 25, "ID"+i);
+            Payment pay = new Payment(i+1, 500, "UPI", "COMPLETED");
+            Ticket t = new Ticket(1001+i, 101, "Delhi", "Mumbai", 500, "BOOKED", pay);
+            p.addTicket(t);
+            assert train.addPassenger(p);
+        }
+        assert train.getAvailableSeats() == 0;
+        assert train.getPassengers().size() == 50;
+        
+        // Test 6: Full train prevention
+        System.out.println("Test 6: Prevention of Overbooking");
+        Passenger fullPass = new Passenger(51, "Extra", 25, "ID51");
+        Payment fullPay = new Payment(51, 500, "UPI", "COMPLETED");
+        Ticket fullTicket = new Ticket(1051, 101, "Delhi", "Mumbai", 500, "BOOKED", fullPay);
+        fullPass.addTicket(fullTicket);
+        assert !train.addPassenger(fullPass); // Should fail
+        
+        System.out.println("✓ All tests passed!");
+    }
+}
+
+Run test:
+  javac TestTrainTicketSystem.java
+  java TestTrainTicketSystem
+
+
+MANUAL TESTING CHECKLIST:
+=========================
+
+Authentication:
+  ☐ Login with correct credentials
+  ☐ Login with incorrect credentials
+  ☐ Register new user
+  ☐ Register duplicate user
+  ☐ Logout
+
+Booking Tickets:
+  ☐ Book single ticket with valid input
+  ☐ Book multiple tickets
+  ☐ Verify capacity decreases
+  ☐ Book with different payment methods
+  ☐ Attempt booking when train full
+
+Cancellation:
+  ☐ Cancel existing valid ticket
+  ☐ Verify capacity increases
+  ☐ Verify refund amount shown
+  ☐ Attempt cancellation of non-existent passenger
+  ☐ Attempt cancellation of non-existent ticket
+
+Listing & Viewing:
+  ☐ List all passengers with data
+  ☐ List when no passengers
+  ☐ View passenger details
+  ☐ Check column alignment in table
+  ☐ View passenger ticket count
+
+Train Status:
+  ☐ Check status with passengers
+  ☐ Check status when empty
+  ☐ Verify occupancy percentage calculation
+  ☐ Check available seats count
+  ☐ Verify capacity display
+
+Edge Cases:
+  ☐ Invalid menu input
+  ☐ Non-numeric input for numbers
+  ☐ Empty string input
+  ☐ Whitespace handling
+  ☐ Special characters in names
+  ☐ Maximum capacity (50) boundary
+  ☐ Zero passengers scenario
+
+
+EXPECTED OUTPUT EXAMPLES:
+==========================
+
+Successful Login:
+```
+========== AUTHENTICATION MENU ==========
+1. Login
+2. Register
+3. Exit
+Enter your choice: 1
+Enter username: user1
+Enter password: pass123
+✓ Login successful! Welcome, user1
+```
+
+Book Ticket Success:
+```
+Enter passenger name: Raj Kumar
+Enter passenger age: 28
+Enter passenger Aadhar: 1234-5678-9012
+Enter source station: Delhi
+Enter destination station: Mumbai
+Enter ticket fare: 500
+Enter payment method (CREDIT_CARD/DEBIT_CARD/UPI/CASH): UPI
+
+✓ Ticket booked successfully!
+Passenger ID: 1
+Ticket ID: 1001
+Ticket{ticketId=1001, trainNumber=101, source='Delhi', destination='Mumbai', 
+fare=500.0, status='BOOKED', payment=Payment{paymentId=1, amount=500.0, 
+paymentMethod='UPI', status='COMPLETED'}}
+Available seats: 49
+```
+
+List Passengers:
+```
+========== ALL PASSENGERS ==========
+ID    Name                 Age   Aadhar          Tickets   
+====================================================================
+1     Raj Kumar            28    1234-5678-9012  1         
+2     Priya Singh          25    9876-5432-1098  1         
+====================================================================
+Total passengers: 2
+```
+
+Train Status:
+```
+========== TRAIN STATUS ==========
+Train{trainNumber=101, trainName='Express Train', source='Delhi', 
+destination='Mumbai', totalCapacity=50, currentPassengers=2, availableSeats=48}
+
+Train Details:
+  Route: Delhi → Mumbai
+  Total Seats: 50
+  Occupied Seats: 2
+  Available Seats: 48
+  Occupancy Rate: 4.00%
+```
+
+
+TROUBLESHOOTING:
+================
+
+Issue: Compilation Error - "cannot find symbol"
+Solution:
+  ✓ Check all Java files are in same directory
+  ✓ Ensure class names match file names exactly
+  ✓ Verify imports are correct
+
+Issue: Application won't start
+Solution:
+  ✓ Ensure all .class files are compiled
+  ✓ Check Java is installed: java -version
+  ✓ Run from correct directory with compiled files
+
+Issue: Scanner input not working
+Solution:
+  ✓ Ensure input is provided after prompt
+  ✓ Use keyboard input, not copy-paste
+  ✓ Check for hanging threads
+
+Issue: Capacity not decreasing
+Solution:
+  ✓ Verify addPassenger() is called
+  ✓ Check currentPassengers field
+  ✓ Confirm getAvailableSeats() logic
+
+Issue: File not found errors
+Solution:
+  ✓ Save all files in same directory
+  ✓ Use absolute paths for debug
+  ✓ Verify file extensions (.java, not .txt)
+
+
+PERFORMANCE NOTES:
+==================
+
+Current Implementation:
+  ✓ Linear search for passengers: O(n)
+  ✓ ArrayList for passenger storage: O(1) add, O(n) search
+  ✓ HashMap for credentials: O(1) lookup
+  ✓ Suitable for small dataset (50 passengers max)
+
+For 1000+ passengers, consider:
+  ✓ HashMap for passenger lookup by ID
+  ✓ Database with indexing
+  ✓ Pagination for listing
+
+
+MEMORY USAGE:
+=============
+
+Per Passenger:
+  ≈ 100 bytes (object overhead + fields)
+  
+Per Ticket:
+  ≈ 150 bytes (with payment reference)
+  
+Per Payment:
+  ≈ 80 bytes
+
+For 50 full passengers with 1 ticket each:
+  ≈ 50 × (100 + 150 + 80) ≈ 16.5 KB
+
+Total application memory: < 1 MB
+
+---
+
+You're now ready to compile, run, and thoroughly test the system!

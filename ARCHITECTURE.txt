@@ -1,0 +1,316 @@
+========================================================
+   TRAIN TICKET BOOKING SYSTEM - ARCHITECTURE GUIDE
+========================================================
+
+PROJECT STRUCTURE:
+==================
+
+┌─────────────────────────────────────────┐
+│        MAIN (Menu-Driven Interface)     │
+│  - Handles all user interactions        │
+│  - Manages system flow                  │
+│  - Displays menus and prompts           │
+└──────────────┬──────────────────────────┘
+               │
+        ┌──────┼──────┐
+        │      │      │
+        ▼      ▼      ▼
+   ┌────────────────────────┐    ┌──────────────┐
+   │   UserLoginSystem      │    │   Train      │
+   │ (Authentication)       │    │ (Entity)     │
+   ├────────────────────────┤    ├──────────────┤
+   │ - register()           │    │ - Passenger  │
+   │ - login()              │    │   List       │
+   │ - logout()             │    │ - Capacity   │
+   │ - isLoggedIn()         │    │   Management │
+   └────────────────────────┘    └──────┬───────┘
+                                        │
+                  ┌─────────────────────┼─────────────────────┐
+                  │                     │                     │
+                  ▼                     ▼                     ▼
+            ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+            │  Passenger   │      │   Ticket     │      │   Payment    │
+            │  (Entity)    │      │  (Entity)    │      │  (Entity)    │
+            ├──────────────┤      ├──────────────┤      ├──────────────┤
+            │ - id         │      │ - ticketId   │      │ - paymentId  │
+            │ - name       │      │ - source     │      │ - amount     │
+            │ - age        │      │ - destination│      │ - method     │
+            │ - aadhar     │      │ - fare       │      │ - status     │
+            │ - tickets[]  │      │ - status     │      └──────────────┘
+            └──────────────┘      │ - payment    │
+                                  └──────────────┘
+
+
+CLASS RESPONSIBILITIES:
+======================
+
+1. Main.java
+   Purpose: Main application controller
+   Responsibilities:
+   - Display authentication menu
+   - Display main menu
+   - Handle user input
+   - Manage booking, cancellation, and viewing operations
+   - Coordinate between UserLoginSystem and Train
+
+2. UserLoginSystem.java
+   Purpose: Authentication management
+   Responsibilities:
+   - Store user credentials in HashMap
+   - Validate login credentials
+   - Register new users
+   - Track logged-in user
+   - Manage login/logout sessions
+
+3. Train.java
+   Purpose: Train entity and passenger management
+   Responsibilities:
+   - Store train information (number, name, route)
+   - Manage passenger list
+   - Track capacity and current passengers
+   - Implement capacity validation
+   - Add/remove passengers
+
+4. Passenger.java
+   Purpose: Represents a passenger
+   Responsibilities:
+   - Store personal information (id, name, age, aadhar)
+   - Maintain list of booked tickets
+   - Add/remove tickets
+   - Provide passenger details
+
+5. Ticket.java
+   Purpose: Represents a booked ticket
+   Responsibilities:
+   - Store ticket information (id, route, fare)
+   - Link to payment
+   - Maintain ticket status (BOOKED/CANCELLED)
+   - Provide ticket details
+
+6. Payment.java
+   Purpose: Represents payment for a ticket
+   Responsibilities:
+   - Store payment information
+   - Track payment method and status
+   - Maintain transaction amount
+
+
+DATA FLOW DIAGRAM:
+==================
+
+                    ┌──────────────────┐
+                    │     START        │
+                    └────────┬─────────┘
+                             │
+                    ┌────────▼─────────┐
+                    │   Display Auth   │
+                    │   Menu           │
+                    └────────┬─────────┘
+                             │
+               ┌─────────────┼─────────────┐
+               │             │             │
+            Login         Register        Exit
+               │             │             │
+        ┌──────▼────┐  ┌─────▼────┐      │
+        │   Check   │  │   Store  │      │
+        │Credentials│  │   User   │      │
+        └──────┬────┘  └─────┬────┘      │
+               │             │            │
+        ┌──────▼─────┐  ┌────▼─────┐     │
+        │   Success? │  │   Show   │     │
+        └──────┬─────┘  │   Menu   │     │
+               │        └──────┬───┘     │
+        ┌──────▼────────────────┼────┐   │
+        │     Main Menu              │   │
+        └──────┬────────────────┬────┘   │
+               │                └────────┤
+        ┌──────┴──────┬─────────┬─────────┬──────────────┐
+        │             │         │         │              │
+     Book Ticket  Cancel    View      List All        Check      Logout
+                 Ticket     Tickets   Passengers     Status
+        │             │         │         │              │         │
+        ▼             ▼         ▼         ▼              ▼         ▼
+    [Process]    [Remove]  [Filter]  [Display]     [Display]    [Logout]
+        │             │         │         │              │         │
+        └─────────────┴─────────┴─────────┴──────────────┴─────────┘
+                                 │
+                        ┌────────▼────────┐
+                        │   Back to Menu  │
+                        └─────────────────┘
+
+
+CAPACITY MANAGEMENT LOGIC:
+===========================
+
+Initial State:
+  totalCapacity = 50
+  currentPassengers = 0
+  availableSeats = 50
+
+When Booking Ticket (addPassenger):
+  ┌─────────────────────────────┐
+  │ Check if currentPassengers  │
+  │ < totalCapacity?            │
+  └────────┬────────────────────┘
+           │
+      Yes  │  No
+           │  │
+      ┌────▼┐│
+      │Add │ │
+      │Pass.││Error: Train Full
+      │+1  ││
+      │    ││
+      └────┘│
+
+When Cancelling Ticket (removePassenger):
+  ┌──────────────────────────────┐
+  │ Find Passenger and Ticket    │
+  │ Check if exists?             │
+  └────────┬─────────────────────┘
+           │
+      Yes  │  No
+           │  │
+      ┌────▼┐│
+      │Remove    │Error: Not Found
+      │Pass  ││
+      │-1   ││
+      │    ││
+      └────┘│
+
+
+OPERATION FLOWS:
+================
+
+1. BOOKING FLOW:
+   ┌─────────────────────────────────────────┐
+   │ 1. Validate Train Capacity              │
+   │ 2. Get Passenger Details                │
+   │ 3. Create Passenger Object              │
+   │ 4. Process Payment                      │
+   │ 5. Create Ticket                        │
+   │ 6. Add Ticket to Passenger              │
+   │ 7. Add Passenger to Train               │
+   │ 8. Decrement availableSeats (50 → 49)  │
+   │ 9. Display Confirmation                 │
+   └─────────────────────────────────────────┘
+
+2. CANCELLATION FLOW:
+   ┌─────────────────────────────────────────┐
+   │ 1. Get Passenger ID                     │
+   │ 2. Find Passenger in Train              │
+   │ 3. Display Passenger's Tickets          │
+   │ 4. Select Ticket to Cancel              │
+   │ 5. Change Ticket Status → CANCELLED     │
+   │ 6. Remove Ticket from Passenger         │
+   │ 7. Remove Passenger from Train          │
+   │ 8. Increment availableSeats (49 → 50)  │
+   │ 9. Display Refund Amount                │
+   └─────────────────────────────────────────┘
+
+3. PASSENGER LISTING FLOW:
+   ┌─────────────────────────────────────────┐
+   │ 1. Get All Passengers from Train        │
+   │ 2. Format Header with Column Names      │
+   │ 3. For Each Passenger:                  │
+   │    - Display ID, Name, Age, Aadhar     │
+   │    - Count Tickets                      │
+   │ 4. Display Total Passenger Count        │
+   │ 5. Return to Main Menu                  │
+   └─────────────────────────────────────────┘
+
+4. TRAIN STATUS FLOW:
+   ┌─────────────────────────────────────────┐
+   │ 1. Get Train Object Details             │
+   │ 2. Calculate Occupancy Rate             │
+   │    = (currentPassengers / totalCapacity)│
+   │      × 100                              │
+   │ 3. Display:                             │
+   │    - Route (Source → Destination)       │
+   │    - Total Seats                        │
+   │    - Occupied Seats                     │
+   │    - Available Seats                    │
+   │    - Occupancy Percentage               │
+   └─────────────────────────────────────────┘
+
+
+COUNTER MANAGEMENT:
+===================
+
+ticketIdCounter:   Starts at 1001, increments for each ticket
+passengerIdCounter: Starts at 1, increments for each passenger
+paymentIdCounter:   Starts at 1, increments for each payment
+
+Examples:
+  Ticket IDs:     1001, 1002, 1003, ...
+  Passenger IDs:  1, 2, 3, 4, ...
+  Payment IDs:    1, 2, 3, 4, ...
+
+
+ERROR HANDLING SCENARIOS:
+=========================
+
+1. Invalid Login:
+   Message: "✗ Invalid username or password!"
+   Action: Return to authentication menu
+
+2. User Already Exists (Registration):
+   Message: "✗ Username already exists!"
+   Action: Prompt to try different username
+
+3. Train Full (Booking):
+   Message: "✗ Train is full! No seats available."
+   Action: Prevent booking
+
+4. Passenger Not Found (Cancellation):
+   Message: "✗ Passenger not found!"
+   Action: Return to main menu
+
+5. No Tickets (View):
+   Message: "No tickets found!"
+   Action: Return to main menu
+
+6. Invalid Menu Choice:
+   Message: "Invalid choice! Please try again."
+   Action: Redisplay menu
+
+
+TESTING SCENARIOS:
+==================
+
+1. Test Login:
+   - Register new user
+   - Login with correct credentials
+   - Login with wrong password
+   - Login with non-existent user
+
+2. Test Booking:
+   - Book single ticket
+   - Book multiple tickets
+   - Check capacity decreases
+   - Try booking when full
+
+3. Test Cancellation:
+   - Cancel existing ticket
+   - Check capacity increases
+   - Try cancelling non-existent ticket
+
+4. Test Listing:
+   - List passengers (empty)
+   - List passengers (with data)
+   - View ticket details
+
+5. Test Capacity:
+   - Check initial (50)
+   - Book 50 tickets (should be full)
+   - Try booking 51st (should fail)
+   - Cancel one (should have 1 seat)
+
+---
+
+This architecture ensures:
+✓ Separation of concerns
+✓ Easy maintenance
+✓ Scalability
+✓ Clear data flow
+✓ Robust error handling
+✓ User-friendly interface

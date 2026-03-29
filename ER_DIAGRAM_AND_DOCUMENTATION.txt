@@ -1,0 +1,184 @@
+TRAIN TICKET BOOKING SYSTEM - ER DIAGRAM
+==========================================
+
+                    ┌─────────────────────┐
+                    │       TRAIN         │
+                    ├─────────────────────┤
+                    │ trainNumber (PK)    │
+                    │ trainName           │
+                    │ source              │
+                    │ destination         │
+                    │ totalCapacity       │
+                    │ currentPassengers   │
+                    └──────────┬──────────┘
+                               │
+                               │ 1
+                               │
+                        has    │
+                               │
+                               │ M
+                               │
+                    ┌──────────▼──────────┐
+                    │     PASSENGER       │
+                    ├─────────────────────┤
+                    │ id (PK)             │
+                    │ name                │
+                    │ age                 │
+                    │ aadhar              │
+                    │ trainNumber (FK)    │
+                    └──────────┬──────────┘
+                               │
+                               │ 1
+                               │
+                        has    │
+                               │
+                               │ M
+                               │
+                    ┌──────────▼──────────┐
+                    │      TICKET         │
+                    ├─────────────────────┤
+                    │ ticketId (PK)       │
+                    │ trainNumber (FK)    │
+                    │ passengerId (FK)    │
+                    │ source              │
+                    │ destination         │
+                    │ fare                │
+                    │ status              │
+                    │ paymentId (FK)      │
+                    └──────────┬──────────┘
+                               │
+                               │ 1
+                               │
+                      has      │
+                               │
+                               │ 1
+                               │
+                    ┌──────────▼──────────┐
+                    │     PAYMENT         │
+                    ├─────────────────────┤
+                    │ paymentId (PK)      │
+                    │ amount              │
+                    │ paymentMethod       │
+                    │ status              │
+                    └─────────────────────┘
+
+
+RELATIONSHIP MAPPING:
+====================
+1. Train → Passenger: One-to-Many (1:M)
+   - One train can have multiple passengers
+   - One passenger belongs to one train
+
+2. Passenger → Ticket: One-to-Many (1:M)
+   - One passenger can have multiple tickets
+   - One ticket belongs to one passenger
+
+3. Ticket → Payment: One-to-One (1:1)
+   - One ticket has exactly one payment
+   - One payment belongs to exactly one ticket
+
+
+CLASS STRUCTURE:
+================
+
+Train:
+  - trainNumber (int, Primary Key)
+  - trainName (String)
+  - source (String)
+  - destination (String)
+  - totalCapacity (int, default = 50)
+  - currentPassengers (int)
+  - List<Passenger> passengers
+
+Passenger:
+  - id (int, Primary Key)
+  - name (String)
+  - age (int)
+  - aadhar (String)
+  - List<Ticket> tickets
+
+Ticket:
+  - ticketId (int, Primary Key)
+  - trainNumber (int, Foreign Key)
+  - source (String)
+  - destination (String)
+  - fare (double)
+  - status (String: BOOKED/CANCELLED)
+  - Payment payment (One-to-One relationship)
+
+Payment:
+  - paymentId (int, Primary Key)
+  - amount (double)
+  - paymentMethod (String: CREDIT_CARD/DEBIT_CARD/UPI/CASH)
+  - status (String: PENDING/COMPLETED/FAILED)
+
+UserLoginSystem:
+  - userCredentials (HashMap<String, String>)
+  - loggedInUser (String)
+
+
+FEATURES IMPLEMENTED:
+======================
+1. USER LOGIN & REGISTRATION
+   - HashMap-based credential storage
+   - Secure login/logout
+   - User registration functionality
+
+2. TICKET BOOKING
+   - Book new tickets
+   - Create passenger profile
+   - Process payments
+   - Check capacity before booking
+   - Capacity decreases by 1 when ticket is booked
+
+3. TICKET CANCELLATION
+   - Cancel existing tickets
+   - Refund amount display
+   - Capacity increases by 1 when ticket is cancelled
+   - Remove passenger from train
+
+4. PASSENGER MANAGEMENT
+   - List all passengers
+   - View passenger details
+   - Track tickets per passenger
+   - Display in formatted table
+
+5. TRAIN STATUS
+   - Check available seats
+   - View occupancy rate
+   - See total and occupied seats
+   - Train capacity management (default 50, +/- as needed)
+
+6. TICKET VIEWING
+   - View all booked tickets
+   - Display ticket details with payment info
+   - Organized by passenger
+
+
+HOW TO USE:
+===========
+1. Compile: javac *.java
+2. Run: java Main
+3. Select "Register" to create a new account or use default credentials:
+   - username: user1, password: pass123
+   - username: user2, password: pass456
+   - username: admin, password: admin123
+4. Login with your credentials
+5. Choose from menu options:
+   - Book Ticket
+   - Cancel Ticket
+   - View My Tickets
+   - List All Passengers
+   - Check Train Status
+   - Logout
+
+
+EXAMPLE WORKFLOW:
+=================
+1. Start application
+2. Register a new user or login
+3. Book a ticket (passenger added, capacity decreases)
+4. View all passengers
+5. Check train status (shows remaining capacity)
+6. Cancel a ticket (passenger removed, capacity increases)
+7. Logout
